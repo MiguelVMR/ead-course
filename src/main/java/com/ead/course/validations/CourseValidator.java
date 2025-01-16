@@ -1,12 +1,8 @@
 package com.ead.course.validations;
 
-import com.ead.course.clients.AuthUserClient;
 import com.ead.course.dtos.CourseRecordDto;
-import com.ead.course.dtos.UserRecordDto;
-import com.ead.course.enums.UserType;
 import com.ead.course.services.CourseService;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
@@ -24,12 +20,10 @@ public class CourseValidator implements Validator {
 
     private final Validator validator;
     final CourseService courseService;
-    final AuthUserClient authUserClient;
 
-    public CourseValidator(@Qualifier("defaultValidator") Validator validator, CourseService courseService, AuthUserClient authUserClient) {
+    public CourseValidator(@Qualifier("defaultValidator") Validator validator, CourseService courseService) {
         this.validator = validator;
         this.courseService = courseService;
-        this.authUserClient = authUserClient;
     }
 
     @Override
@@ -54,11 +48,11 @@ public class CourseValidator implements Validator {
     }
 
     private void validateUserInstructor(UUID userInstructor, Errors errors){
-        ResponseEntity<UserRecordDto> responseUserInstructor = authUserClient.getOneUserById(userInstructor);
-        if(responseUserInstructor.getBody().userType().equals(UserType.STUDENT) ||
-           responseUserInstructor.getBody().userType().equals(UserType.USER)){
-            errors.rejectValue("userInstructor", "UserInstructorError", "User must be INSTRUCTOR or ADMIN.");
-        }
+//        ResponseEntity<UserRecordDto> responseUserInstructor = authUserClient.getOneUserById(userInstructor);
+//        if(responseUserInstructor.getBody().userType().equals(UserType.STUDENT) ||
+//           responseUserInstructor.getBody().userType().equals(UserType.USER)){
+//            errors.rejectValue("userInstructor", "UserInstructorError", "User must be INSTRUCTOR or ADMIN.");
+//        }
     }
 
 
