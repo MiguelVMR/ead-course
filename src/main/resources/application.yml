@@ -19,11 +19,19 @@ spring:
         jdbc:
           lob:
             non-contextual-creation: true
+  rabbitmq:
+    addresses: ${ENDENRECO_RABBIT}
 
 ead:
   api:
     url:
       authuser: 'http://ead-authuser-service/ead-authuser'
+  broker:
+    exchange:
+      userEventExchange: ead.userevent
+    queue:
+      userEventQueue:
+        name: ead.userevent.ms.course
 
 eureka:
   client:
