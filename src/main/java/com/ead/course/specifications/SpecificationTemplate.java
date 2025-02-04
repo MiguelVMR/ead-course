@@ -1,13 +1,14 @@
 package com.ead.course.specifications;
 
 import com.ead.course.models.CourseModel;
-import com.ead.course.models.CourseUserModel;
 import com.ead.course.models.LessonModel;
 import com.ead.course.models.ModuleModel;
+import com.ead.course.models.UserModel;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Root;
 import net.kaczmarzyk.spring.data.jpa.domain.Equal;
+import net.kaczmarzyk.spring.data.jpa.domain.Like;
 import net.kaczmarzyk.spring.data.jpa.domain.LikeIgnoreCase;
 import net.kaczmarzyk.spring.data.jpa.web.annotation.And;
 import net.kaczmarzyk.spring.data.jpa.web.annotation.Spec;
@@ -30,13 +31,24 @@ public class SpecificationTemplate {
             @Spec(path = "name", spec = LikeIgnoreCase.class),
             @Spec(path = "userInstructor", spec = Equal.class)
     })
-    public interface CourseSpec extends Specification<CourseModel> {}
+    public interface CourseSpec extends Specification<CourseModel> {
+    }
 
     @Spec(path = "title", spec = LikeIgnoreCase.class)
-    public interface ModuleSpec extends Specification<ModuleModel> {}
+    public interface ModuleSpec extends Specification<ModuleModel> {
+    }
 
     @Spec(path = "title", spec = LikeIgnoreCase.class)
-    public interface LessonSpec extends Specification<LessonModel> {}
+    public interface LessonSpec extends Specification<LessonModel> {
+    }
+
+    @And({
+            @Spec(path = "email", spec = Like.class),
+            @Spec(path = "fullName", spec = LikeIgnoreCase.class),
+            @Spec(path = "userStatus", spec = Equal.class),
+            @Spec(path = "userType", spec = Equal.class)})
+    public interface UserSpec extends Specification<UserModel> {
+    }
 
     public static Specification<ModuleModel> moduleCourseId(final UUID courseId) {
         return (root, query, cb) -> {
@@ -61,8 +73,20 @@ public class SpecificationTemplate {
     public static Specification<CourseModel> courseUserId(final UUID userId) {
         return (root, query, cb) -> {
             query.distinct(true);
-            Join<CourseModel, CourseUserModel> courseJoin = root.join("coursesUsers");
-            return cb.equal(courseJoin.get("userId"), userId);
+            Root<CourseModel> course = root;
+            Root<UserModel> user = query.from(UserModel.class);
+            Expression<Collection<CourseModel>> usersCourses = user.get("courses");
+            return cb.and(cb.equal(user.get("userId"), userId), cb.isMember(course, usersCourses));
+        };
+    }
+
+    public static Specification<UserModel> userCourseId(final UUID courseId) {
+        return (root, query, cb) -> {
+            query.distinct(true);
+            Root<UserModel> user = root;
+            Root<CourseModel> course = query.from(CourseModel.class);
+            Expression<Collection<UserModel>> coursesUsers = course.get("users");
+            return cb.and(cb.equal(course.get("courseId"), courseId), cb.isMember(user, coursesUsers));
         };
     }
 }
