@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,6 +34,7 @@ public class CourseController {
         this.courseValidator = courseValidator;
     }
 
+    @PreAuthorize( "hasAnyRole('INSTRUCTOR')")
     @PostMapping
     public ResponseEntity<Object> saveCourse(@RequestBody CourseRecordDto courseRecordDto, Errors errors){
 
@@ -43,6 +45,7 @@ public class CourseController {
         return ResponseEntity.status(HttpStatus.CREATED).body(courseService.save(courseRecordDto));
     }
 
+    @PreAuthorize( "hasAnyRole('USER')")
     @GetMapping
     public ResponseEntity<Page<CourseModel>> getAllCourses(SpecificationTemplate.CourseSpec spec,
                                                            Pageable pageable,
@@ -54,17 +57,20 @@ public class CourseController {
         return ResponseEntity.status(HttpStatus.OK).body(courseModelPage);
     }
 
+    @PreAuthorize( "hasAnyRole('USER')")
     @GetMapping("/{courseId}")
     public ResponseEntity<Object> getOneCourse(@PathVariable(value = "courseId") UUID courseId){
         return ResponseEntity.status(HttpStatus.OK).body(courseService.findById(courseId).get());
     }
 
+    @PreAuthorize( "hasAnyRole('INSTRUCTOR')")
     @DeleteMapping("/{courseId}")
     public ResponseEntity<Object> deleteCourse(@PathVariable(value = "courseId") UUID courseId){
         courseService.delete(courseService.findById(courseId).get());
         return ResponseEntity.status(HttpStatus.OK).body("Course deleted successfully.");
     }
 
+    @PreAuthorize( "hasAnyRole('INSTRUCTOR')")
     @PutMapping("/{courseId}")
     public ResponseEntity<Object> updateCourse(@PathVariable(value = "courseId") UUID courseId,
                                                @RequestBody @Valid CourseRecordDto courseRecordDto){
